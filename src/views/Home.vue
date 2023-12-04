@@ -15,7 +15,7 @@
     </div>
     
     <ul>
-      <li class="flex flex-col" v-for="item of tablesData" :key="item.id+item">
+      <li class="flex flex-col" v-for="item of tablesData.slice().reverse()" :key="item.id+item">
         <span class="my-2 bg-[green]/40">{{ item }}</span>
         <!-- <JsonViewer :value="item" copyable sort theme="dark"  @onKeyClick="keyClick"/> -->
       </li>
