@@ -4,14 +4,11 @@
       <div class="pr-2">TableId:</div>
       <input
         v-model="tableId"
-        class="w-[80px] h-[30px] border-solid border-2 border-black"
+        class="w-[80px] h-[30px] border-solid border-2 border-black mr-2"
       />
-      <!-- <button
-        class="mx-[20px] h-[30px] rounded-full bg-blue-600 px-[10px]"
-        @click="SearchTableDataFromTableId"
-      >
-        Search
-      </button> -->
+      <button class="bg-[blue] text-[white] flex items-center p-1" @click="pauseClick">
+        {{ isPause? 'Start' : 'Pause' }}
+      </button>
     </div>
     
     <ul>
@@ -29,11 +26,12 @@ import {JsonViewer} from "vue3-json-viewer"
 import "vue3-json-viewer/dist/index.css";
 import { ref, reactive, computed, watch } from 'vue'
 
+const isPause = ref(false);
 const tableId = ref('');
 const msgList = reactive([]);
 const currentTableIdDataList = reactive([]);
 
-var ws = new WebSocket(`wss://datafeed.vivogaming.studio/v2/baccarat TableID 348`);
+var ws = new WebSocket(`wss://datafeed.vivogaming.studio/v2/baccarat`);
 //(`ws://datapush.98kbus.top/websocket/server?appid=app2881111a0de78c8d9d&secret=sec33ce872a385e585f8`);
     
 ws.onopen = function() {
@@ -44,9 +42,11 @@ ws.onopen = function() {
 };
 
 ws.onmessage = function (evt) { 
-  msgList.length = 0;
-  var received_msg = evt.data;
-  msgList.push(received_msg);
+  if (!isPause.value) {
+    msgList.length = 0;
+    var received_msg = evt.data;
+    msgList.push(received_msg);
+  }
 };
 
 ws.onclose = function() { 
@@ -64,10 +64,15 @@ watch(
 
 const tablesData = computed(() => {
   if (tableId.value !== '') {
-    // return JSON.parse(msgList).baccarat.tables.filter((tData) => tData.TableID === tableId.value);
-    currentTableIdDataList.push(JSON.parse(msgList).baccarat.tables.filter((tData) => tData.TableID === tableId.value));
+    const jsonMsgData = JSON.parse(msgList);
+    currentTableIdDataList.push({timeStamp: jsonMsgData.timeStamp, tableData: JSON.parse(msgList).baccarat.tables.filter((tData) => tData.TableID === tableId.value)});
     return currentTableIdDataList;
   }
   return msgList;
 });
+
+const pauseClick = () => {
+  isPause.value = !isPause.value;
+}
+
 </script>
